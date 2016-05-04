@@ -75,7 +75,7 @@ class Field(object):
 		self.default = default
 
 	def __str__(self):
-		return '<%s,%s:%s>'%(self,__class__.__name__,self.column_type,self.name)
+		return '<%s,%s:%s>'%(self.__class__.__name__,self.column_type,self.name)
 
 class StringField(Field):
 	def __init__(self,name = None,primary_key = False,default = None,ddl = 'varchar(100)'):
@@ -95,7 +95,7 @@ class FloatField(Field):
 
 class TextField(Field):
 	def __init__(self,name=None,default=None):
-		super.__init__(name,'text',False,default)
+		super().__init__(name,'text',False,default)
 
 class ModelMetaclass(type):
 
@@ -105,7 +105,7 @@ class ModelMetaclass(type):
 		tableName = attrs.get('__table__',None) or name
 		logging.info('found model:%s (table:%s)'%(name,tableName))
 		mappings = dict()
-		field = []
+		fields = []
 		primaryKey = None
 		for k,v in attrs.items():
 			if isinstance(v,Field):
@@ -128,7 +128,7 @@ class ModelMetaclass(type):
 		attrs['__table__'] = tableName
 		attrs['__primary_key__'] = primaryKey #  name of attribute which is primary key 
 		attrs['__fields__'] = fields # other attribute name 
-		attrs['__select__'] = 'select `%s` ,%s from `%s`'%(primaryKey,', '.join(escaped_fields),talbeName)
+		attrs['__select__'] = 'select `%s` ,%s from `%s`'%(primaryKey,', '.join(escaped_fields),tableName)
 		attrs['__insert__'] = 'insert into `%s` (%s,`%s`) values(%s)' % (tableName,', '.join(escaped_fields),primaryKey,create_args_string(len(escaped_fields)+1))
 		attrs['__update__'] = 'update `%s` set %s where `%s` = ? '%(tableName,', '.join(map(lambda f: '`%s`=?'%(mappings.get(f).name or f),fields)),primaryKey)
 
